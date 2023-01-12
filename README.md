@@ -1,6 +1,6 @@
 # Hyprland config files from Titus
 
-![hyperland-titus.png](hyperland-titus.png)
+![Screenshot](https://github.com/ChrisTitusTech/hyprland-titus/raw/main/hyprland-titus.png)
 
 ## Install
 
