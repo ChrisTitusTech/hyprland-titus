@@ -16,6 +16,8 @@
         "tray",
         "custom/updates",
         "custom/language",
+        "battery",
+        "backlight",
         "pulseaudio",
         "pulseaudio#microphone"
     ],
@@ -42,7 +44,7 @@
         }
     },
     "custom/updates": {
-        "exec": "(checkupdates ; yay -Qua) | wc -l",
+        "exec": "(pacman -Qu ; yay -Qua) | wc -l",
         "interval": 7200,
         "format": " {}"
     },
@@ -60,6 +62,26 @@
     "clock": {
         "format": "{: %R   %d/%m}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "backlight": {
+        "device": "intel_backlight",
+        "format": "{icon} {percent}%",
+        "format-icons": ["", "", ""],
+        "on-scroll-up": "brightnessctl set 1%+",
+        "on-scroll-down": "brightnessctl set 1%-",
+        "min-length": 6
+    },
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 20
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["", "", "", "", "", "", "", "", "", "", ""]
     },
     "pulseaudio": {
         "format": "{icon} {volume}%",
