@@ -44,9 +44,12 @@
         }
     },
     "custom/updates": {
-        "exec": "(pacman -Qu ; yay -Qua) | wc -l",
-        "interval": 7200,
-        "format": " {}"
+        "format": " {}",
+        "interval": 7200,                     // every two hours
+        "exec": "i=$(checkupdates); echo \"$i\" |wc -l; echo \"$i\" |column -t |tr '\n' '\r'",       // # of updates and tooltip details
+        "exec-if": "exit 0",                  // always run; consider advanced run conditions
+        "on-click": "kitty -e sudo pacman -Syu", // update system
+        "signal": 8
     },
    "custom/weather" : {
         "tooltip" : true,
