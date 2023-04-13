@@ -4,6 +4,7 @@
 ISYAY=/sbin/yay
 if [ -f "$ISYAY" ]; then 
     echo -e "$COK - yay was located, moving on."
+    yay -Suy
 else 
     echo -e "$CWR - Yay was NOT located"
     read -n1 -rep $'[\e[1;33mACTION\e[0m] - Would you like to install yay (y,n) ' INSTYAY
