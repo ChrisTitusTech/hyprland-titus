@@ -24,7 +24,7 @@ fi
 read -n1 -rep 'Would you like to install the packages? (y,n)' INST
 if [[ $INST == "Y" || $INST == "y" ]]; then
     yay -R --noconfirm swaylock waybar
-    yay -S --noconfirm hyprland-bin polkit-gnome ffmpeg neovim viewnior \
+    yay -S --noconfirm hyprland polkit-gnome ffmpeg neovim viewnior \
     rofi pavucontrol thunar starship wl-clipboard wf-recorder     \
     swaybg grimblast-git ffmpegthumbnailer tumbler playerctl      \
     noise-suppression-for-voice thunar-archive-plugin kitty       \
