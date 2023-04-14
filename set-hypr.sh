@@ -3,11 +3,21 @@
 #### Check for yay ####
 ISYAY=/sbin/yay
 if [ -f "$ISYAY" ]; then 
-    echo -e "yay was located, moving on.\n"
+    echo -e "$COK - yay was located, moving on."
     yay -Suy
 else 
-    echo -e "yay was not located, please install yay. Exiting script.\n"
-    exit 
+    echo -e "$CWR - Yay was NOT located"
+    read -n1 -rep $'[\e[1;33mACTION\e[0m] - Would you like to install yay (y,n) ' INSTYAY
+    if [[ $INSTYAY == "Y" || $INSTYAY == "y" ]]; then
+        git clone https://aur.archlinux.org/yay-git.git &>> $INSTLOG
+        cd yay-git
+        makepkg -si --noconfirm &>> ../$INSTLOG
+        cd ..
+        
+    else
+        echo -e "$CER - Yay is required for this script, now exiting"
+        exit
+    fi
 fi
 
 ### Install all of the above pacakges ####
