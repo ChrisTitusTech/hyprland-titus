@@ -1,24 +1,67 @@
 #!/bin/bash
 
+clear
+
+# set some expectations for the user
+echo -e 'You are about to execute a script that would attempt to setup Hyprland.
+Please note that Hyprland is still in Beta.
+Please note that VMs are not supported and if you try to run this on
+a Virtual Machine there is a high chance this will fail.
+
+Please note that support for Nvidia GPUs is limited and may require
+more work which may be beyond the scope of this script.
+
+If you are using a Nvidia GPU you need to install nvidia-dkms you will be ask to do so
+within the script, do not install if you are using AMD GPU.\n'
+
+sleep 3
+
+read -n1 -rep $'Would you like to continue with the install (y,n) ' INST
+if [[ $INST == "Y" || $INST == "y" ]]; then
+    echo -e "Starting install script.."
+else
+    echo -e "This script would now exit, no changes were made to your system."
+    exit
+fi
+
+echo -e "\nThis script will run some commands that require sudo. You will be prompted to enter your password.
+If you are worried about entering your password then you may want to review the content of the script."
+
+sleep 3
+
 #### Check for yay ####
 ISYAY=/sbin/yay
-if [ -f "$ISYAY" ]; then 
-    echo -e "$COK - yay was located, moving on."
+if [ -f "$ISYAY" ]; then
+    echo -e "Yay was located, moving on."
     yay -Suy
-else 
-    echo -e "$CWR - Yay was NOT located"
-    read -n1 -rep $'[\e[1;33mACTION\e[0m] - Would you like to install yay (y,n) ' INSTYAY
+else
+    echo -e "Yay was NOT located"
+    read -n1 -rep $'Would you like to install yay (y,n) ' INSTYAY
     if [[ $INSTYAY == "Y" || $INSTYAY == "y" ]]; then
         git clone https://aur.archlinux.org/yay-git.git &>> $INSTLOG
         cd yay-git
         makepkg -si --noconfirm &>> ../$INSTLOG
         cd ..
-        
     else
-        echo -e "$CER - Yay is required for this script, now exiting"
+        echo -e "Yay is required for this script, now exiting\n"
         exit
     fi
 fi
+
+### Check Nvidia / installation ###
+{
+    nvidia-dkms=$(yay -Qi nvidia-dkms)
+} &> /dev/null # hides output pretty :)
+if [[ $? != 0 ]]; then
+    echo -e "nvidia-dkms isn't install if you have an nvidia GPU you need to install this."
+    read -n1 -rep $'Would you like to install nvidia-dkms (y,n) ' INSTNDKMS
+    if [[ $INSTANDKMS == "Y" || $INSTANDKMS == "y" ]]; then
+        yay -S --noconfirm nvidia-dkms
+    fi
+else 
+    echo -e "Nvidia-dkms is install this mean you have a Nvidia GPU"
+fi
+
 
 ### Install all of the above pacakges ####
 read -n1 -rep 'Would you like to install the packages? (y,n)' INST
