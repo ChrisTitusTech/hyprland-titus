@@ -1,38 +1,56 @@
 #!/bin/bash
 
-# set some colors
-CNT="[\e[1;36mNOTE\e[0m]"
-COK="[\e[1;32mOK\e[0m]"
-CER="[\e[1;31mERROR\e[0m]"
-CAT="[\e[1;37mATTENTION\e[0m]"
-CWR="[\e[1;35mWARNING\e[0m]"
-CAC="[\e[1;33mACTION\e[0m]"
-INSTLOG="install.log"
+# Define variables
+GREEN="$(tput setaf 2)[OK]$(tput sgr0)"
+RED="$(tput setaf 1)[ERROR]$(tput sgr0)"
+YELLOW="$(tput setaf 3)[NOTE]$(tput sgr0)"
+CAT="$(tput setaf 6)[ACTION]$(tput sgr0)"
+LOG="install.log"
 
-#### Check for yay ####
-ISYAY=/sbin/yay
-if [ -f "$ISYAY" ]; then 
-    echo -e "$COK - yay was located, moving on."
-    yay -Suy
+# Check if yay is installed
+ISyay=/sbin/yay
+
+if [ -f "$ISyay" ]; then
+    printf "\n%s - yay was located, moving on.\n" "$GREEN"
 else 
-    echo -e "$CWR - Yay was NOT located"
-    read -n1 -rep $'[\e[1;33mACTION\e[0m] - Would you like to install yay (y,n) ' INSTYAY
-    if [[ $INSTYAY == "Y" || $INSTYAY == "y" ]]; then
-        git clone https://aur.archlinux.org/yay-git.git 2>&1 | tee -a $LOG
-        cd yay-git
+    printf "\n%s - yay was NOT located\n" "$YELLOW"
+    read -n1 -rep "${CAT} Would you like to install yay (y,n)" INST
+    if [[ $INST =~ ^[Yy]$ ]]; then
+        git clone https://aur.archlinux.org/yay.git
+        cd yay
         makepkg -si --noconfirm 2>&1 | tee -a $LOG
         cd ..
-        
     else
-        echo -e "$CER - Yay is required for this script, now exiting"
+        printf "%s - yay is required for this script, now exiting\n" "$RED"
         exit
     fi
+# update system before proceed
+    printf "${YELLOW} System Update to avoid issue\n" 
+    yay -Syu --noconfirm 2>&1 | tee -a $LOG
 fi
 
-### Install all of the above pacakges ####
-read -n1 -rep 'Would you like to install the packages? (y,n)' INST
-if [[ $INST == "Y" || $INST == "y" ]]; then
-   git_pkgs="grimblast-git sddm-git"
+# Function to print error messages
+print_error() {
+    printf " %s%s\n" "$RED" "$1" "$NC" >&2
+}
+
+# Function to print success messages
+print_success() {
+    printf "%s%s%s\n" "$GREEN" "$1" "$NC"
+}
+
+
+### Install packages ####
+read -n1 -rep "${CAT} Would you like to install the packages? (y/n)" inst
+echo
+
+if [[ $inst =~ ^[Nn]$ ]]; then
+    printf "${YELLOW} No packages installed. Goodbye! \n"
+            exit 1
+        fi
+
+if [[ $inst =~ ^[Yy]$ ]]; then
+   git_pkgs="grimblast-git sddm-git hyprpicker-git"
    hypr_pkgs="hyprland waybar-hyprland wl-clipboard wf-recorder rofi wlogout swaylock-effects dunst swaybg kitty"    
    font_pkgs="ttf-nerd-fonts-symbols-common otf-firamono-nerd inter-font otf-sora ttf-fantasque-nerd noto-fonts noto-fonts-emoji ttf-comfortaa"
    font_pkgs2="ttf-jetbrains-mono-nerd ttf-icomoon-feather ttf-iosevka-nerd adobe-source-code-pro-fonts"
@@ -51,23 +69,23 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
     print_success " All necessary packages installed successfully."
 else
     echo
-    print_error " Packages not installed - please check the install.log "
+    print_error " Packages not installed - please check the install.log"
     sleep 1
 fi
 
 
 ### Copy Config Files ###
-read -n1 -rep 'Would you like to copy config files? (y,n)' CFG
-if [[ $CFG == "Y" || $CFG == "y" ]]; then
-    echo -e "Copying config files...\n"
-    cp -R ./dotconfig/dunst ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/hypr ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/kitty ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/pipewire ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/rofi ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/swaylock ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/waybar ~/.config/ 2>&1 | tee -a $LOG
-    cp -R ./dotconfig/wlogout ~/.config/ 2>&1 | tee -a $LOG
+read -n1 -rep "${CAT} Would you like to copy config and wallpaper files? (y,n)" CFG
+if [[ $CFG =~ ^[Yy]$ ]]; then
+    printf " Copying config files...\n"
+    cp -r dotconfig/dunst ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/hypr ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/kitty ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/pipewire ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/rofi ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/swaylock ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/waybar ~/.config/ 2>&1 | tee -a $LOG
+    cp -r dotconfig/wlogout ~/.config/ 2>&1 | tee -a $LOG
     
     # Set some files as exacutable 
     chmod +x ~/.config/hypr/xdg-portal-hyprland
@@ -81,18 +99,38 @@ if [[ $SDDM == "Y" || $SDDM == "y" ]]; then
     echo -e "The following has been added to $LOC.\n"
     echo -e "[Autologin]\nUser = $(whoami)\nSession=hyprland" | sudo tee -a $LOC
     echo -e "\n"
-    echo -e "Enable SDDM service...\n"
+    echo -e "Enabling SDDM service...\n"
     sudo systemctl enable sddm
     sleep 3
 fi
 
+# BLUETOOTH
+read -n1 -rep "${CAT} OPTIONAL - Would you like to install Bluetooth packages? (y/n)" BLUETOOTH
+if [[ $BLUETOOTH =~ ^[Yy]$ ]]; then
+    printf " Installing Bluetooth Packages...\n"
+ blue_pkgs="bluez bluez-utils blueman"
+    if ! yay -S --noconfirm $blue_pkgs 2>&1 | tee -a $LOG; then
+       	print_error "Failed to install bluetooth packages - please check the install.log"    
+    printf " Activating Bluetooth Services...\n"
+    sudo systemctl enable --now bluetooth.service
+    sleep 2
+    fi
+else
+    printf "${YELLOW} No bluetooth packages installed..\n"
+	fi
 
+    
 ### Script is done ###
-echo -e "Script had completed.\n"
-echo -e "You can start Hyprland by typing Hyprland (note the capital H).\n"
-read -n1 -rep 'Would you like to start Hyprland now? (y,n)' HYP
-if [[ $HYP == "Y" || $HYP == "y" ]]; then
-    exec Hyprland
+printf "\n${GREEN} Installation Completed.\n"
+echo -e "${GREEN} You can start Hyprland by typing Hyprland (note the capital H).\n"
+read -n1 -rep "${CAT} Would you like to start Hyprland now? (y,n)" HYP
+if [[ $HYP =~ ^[Yy]$ ]]; then
+    if command -v Hyprland >/dev/null; then
+        exec Hyprland
+    else
+         print_error " Hyprland not found. Please make sure Hyprland is installed by checking install.log.\n"
+        exit 1
+    fi
 else
     exit
 fi
