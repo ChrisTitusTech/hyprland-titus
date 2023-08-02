@@ -73,7 +73,7 @@ if [[ $inst =~ ^[Yy]$ ]]; then
    font_pkgs="ttf-nerd-fonts-symbols-common otf-firamono-nerd inter-font otf-sora ttf-fantasque-nerd noto-fonts noto-fonts-emoji ttf-comfortaa"
    font_pkgs2="ttf-jetbrains-mono-nerd ttf-icomoon-feather ttf-iosevka-nerd adobe-source-code-pro-fonts"
    app_pkgs="nwg-look-bin qt5ct btop jq gvfs ffmpegthumbs swww mousepad mpv  playerctl pamixer noise-suppression-for-voice"
-   app_pkgs2="polkit-gnome ffmpeg neovim viewnior pavucontrol thunar ffmpegthumbnailer tumbler thunar-archive-plugin"
+   app_pkgs2="polkit-gnome ffmpeg neovim viewnior pavucontrol thunar ffmpegthumbnailer tumbler thunar-archive-plugin xdg-user-dirs"
    theme_pkgs="nordic-theme papirus-icon-theme starship "
 
     yay -R --noconfirm swaylock waybar
@@ -82,9 +82,10 @@ if [[ $inst =~ ^[Yy]$ ]]; then
         print_error " Failed to install additional packages - please check the install.log \n"
         exit 1
     fi
-
+    xdg-user-dirs-update
     echo
     print_success " All necessary packages installed successfully."
+
 else
     echo
     print_error " Packages not installed - please check the install.log"
@@ -109,6 +110,16 @@ if [[ $CFG =~ ^[Yy]$ ]]; then
     chmod +x ~/.config/hypr/xdg-portal-hyprland
     chmod +x ~/.config/waybar/scripts/waybar-wttr.py
 fi
+
+### Add Fonts for Waybar ###
+mkdir -p $HOME/Downloads/nerdfonts/
+cd $HOME/Downloads/
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.3.1/CascadiaCode.zip
+unzip '*.zip' -d $HOME/Downloads/nerdfonts/
+rm -rf *.zip
+sudo cp -R $HOME/Downloads/nerdfonts/ /usr/share/fonts/
+
+fc-cache -rv  
 
 ### Enable SDDM Autologin ###
 read -n1 -rep 'Would you like to enable SDDM autologin? (y,n)' SDDM
