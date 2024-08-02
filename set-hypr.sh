@@ -25,28 +25,6 @@ If you are worried about entering your password, you can cancel the script now w
 
 sleep 3
 
-# Check if yay is installed
-ISyay=/sbin/yay
-
-if [ -f "$ISyay" ]; then
-    printf "\n%s - yay was located, moving on.\n" "$GREEN"
-else 
-    printf "\n%s - yay was NOT located\n" "$YELLOW"
-    read -n1 -rep "${CAT} Would you like to install yay (y,n)" INST
-    if [[ $INST =~ ^[Yy]$ ]]; then
-        git clone https://aur.archlinux.org/yay.git
-        cd yay
-        makepkg -si --noconfirm 2>&1 | tee -a $LOG
-        cd ..
-    else
-        printf "%s - yay is required for this script, now exiting\n" "$RED"
-        exit
-    fi
-# update system before proceed
-    printf "${YELLOW} System Update to avoid issue\n" 
-    yay -Syu --noconfirm 2>&1 | tee -a $LOG
-fi
-
 # Function to print error messages
 print_error() {
     printf " %s%s\n" "$RED" "$1" "$NC" >&2
@@ -68,17 +46,25 @@ if [[ $inst =~ ^[Nn]$ ]]; then
         fi
 
 if [[ $inst =~ ^[Yy]$ ]]; then
-   git_pkgs="grimblast-git sddm-git hyprpicker-git waybar-hyprland-git"
-   hypr_pkgs="hyprland wl-clipboard wf-recorder rofi wlogout swaylock-effects dunst swaybg kitty"    
+   git_pkgs="grimblast-git sddm-git hyprpicker-git gbar-git"
+   hypr_pkgs="hyprland wl-clipboard wf-recorder rofi wlogout dunst hyprpaper kitty hyprcursor hyprlang"    
    font_pkgs="ttf-nerd-fonts-symbols-common otf-firamono-nerd inter-font otf-sora ttf-fantasque-nerd noto-fonts noto-fonts-emoji ttf-comfortaa"
    font_pkgs2="ttf-jetbrains-mono-nerd ttf-icomoon-feather ttf-iosevka-nerd adobe-source-code-pro-fonts"
    app_pkgs="nwg-look-bin qt5ct btop jq gvfs ffmpegthumbs swww mousepad mpv  playerctl pamixer noise-suppression-for-voice"
    app_pkgs2="polkit-gnome ffmpeg neovim viewnior pavucontrol thunar ffmpegthumbnailer tumbler thunar-archive-plugin xdg-user-dirs"
    theme_pkgs="nordic-theme papirus-icon-theme starship "
 
-    yay -R --noconfirm swaylock waybar
+    # Check for yay or paru
+    if command -v yay &> /dev/null; then
+        aur_helper="yay"
+    elif command -v paru &> /dev/null; then
+        aur_helper="paru"
+    else
+        print_error "Neither yay nor paru found. Please install one of them to continue."
+        exit 1
+    fi
 
-    if ! yay -S --noconfirm $git_pkgs $hypr_pkgs $font_pkgs $font_pkgs2 $app_pkgs $app_pkgs2 $theme_pkgs 2>&1 | tee -a $LOG; then
+    if ! $aur_helper -S --noconfirm $git_pkgs $hypr_pkgs $font_pkgs $font_pkgs2 $app_pkgs $app_pkgs2 $theme_pkgs 2>&1 | tee -a $LOG; then
         print_error " Failed to install additional packages - please check the install.log \n"
         exit 1
     fi
@@ -102,13 +88,10 @@ if [[ $CFG =~ ^[Yy]$ ]]; then
     cp -r dotconfig/kitty ~/.config/ 2>&1 | tee -a $LOG
     cp -r dotconfig/pipewire ~/.config/ 2>&1 | tee -a $LOG
     cp -r dotconfig/rofi ~/.config/ 2>&1 | tee -a $LOG
-    cp -r dotconfig/swaylock ~/.config/ 2>&1 | tee -a $LOG
-    cp -r dotconfig/waybar ~/.config/ 2>&1 | tee -a $LOG
     cp -r dotconfig/wlogout ~/.config/ 2>&1 | tee -a $LOG
     
     # Set some files as exacutable 
     chmod +x ~/.config/hypr/xdg-portal-hyprland
-    chmod +x ~/.config/waybar/scripts/waybar-wttr.py
 fi
 
 ### Add Fonts for Waybar ###
