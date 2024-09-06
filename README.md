@@ -28,7 +28,8 @@ nwg-look-bin nordic-theme papirus-icon-theme dunst otf-sora   \
 ttf-nerd-fonts-symbols-common otf-firamono-nerd inter-font    \
 ttf-fantasque-nerd noto-fonts noto-fonts-emoji ttf-comfortaa  \
 ttf-jetbrains-mono-nerd ttf-icomoon-feather ttf-iosevka-nerd  \
-adobe-source-code-pro-fonts brightnessctl hyprpicker-git
+adobe-source-code-pro-fonts brightnessctl hyprpicker-git      \
+xorg-xhost
 ```
 - If you are getting **[error 4 related with payload and client.cpp](https://github.com/Alexays/Waybar/issues/2159)** while building waybar-hyprland-git download PKGBUILD and enter this code in build() section:
 ``` sed -i '10 i #include <stdexcept>\n#include <string>' include/modules/sway/ipc/client.hpp ``` then build (```makepkg -si```)
