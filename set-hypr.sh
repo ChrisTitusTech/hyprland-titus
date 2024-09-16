@@ -10,7 +10,7 @@ LOG="install.log"
 # Set the script to exit on error
 set -e
 
-printf "$(tput setaf 2) Welcome to the Arch Linux YAY Hyprland installer!\n $(tput sgr0)"
+printf "$(tput setaf 2) Welcome to the Arch Linux Hyprland installer!\n $(tput sgr0)"
 
 sleep 2
 
@@ -20,7 +20,7 @@ This script will overwrite some of your configs and files!"
 sleep 2
 
 printf "\n
-$YELLOW  Some commands requires you to enter your password inorder to execute
+$YELLOW  Some commands require you to enter your password inorder to execute
 If you are worried about entering your password, you can cancel the script now with CTRL Q or CTRL C and review contents of this script. \n"
 
 sleep 3
@@ -35,7 +35,6 @@ print_success() {
     printf "%s%s%s\n" "$GREEN" "$1" "$NC"
 }
 
-
 ### Install packages ####
 read -n1 -rep "${CAT} Would you like to install the packages? (y/n)" inst
 echo
@@ -46,13 +45,11 @@ if [[ $inst =~ ^[Nn]$ ]]; then
         fi
 
 if [[ $inst =~ ^[Yy]$ ]]; then
-   git_pkgs="grimblast-git sddm-git hyprpicker-git gbar-git"
-   hypr_pkgs="hyprland wl-clipboard wf-recorder rofi wlogout dunst hyprpaper kitty hyprcursor hyprlang"    
-   font_pkgs="ttf-nerd-fonts-symbols-common otf-firamono-nerd inter-font otf-sora ttf-fantasque-nerd noto-fonts noto-fonts-emoji ttf-comfortaa"
-   font_pkgs2="ttf-jetbrains-mono-nerd ttf-icomoon-feather ttf-iosevka-nerd adobe-source-code-pro-fonts"
-   app_pkgs="nwg-look-bin qt5ct btop jq gvfs ffmpegthumbs swww mousepad mpv  playerctl pamixer noise-suppression-for-voice"
-   app_pkgs2="polkit-gnome ffmpeg neovim viewnior pavucontrol thunar ffmpegthumbnailer tumbler thunar-archive-plugin xdg-user-dirs"
-   theme_pkgs="nordic-theme papirus-icon-theme starship "
+   git_pkgs="grimblast-git hyprpicker-git aylurs-gtk-shell"
+   hypr_pkgs="hyprland wl-clipboard wf-recorder rofi sddm wlogout dunst swww alacritty hyprcursor hyprlang noto-fonts noto-fonts-emoji"
+   app_pkgs="nwg-look qt5ct btop jq gvfs ffmpegthumbs mpv playerctl pamixer noise-suppression-for-voice"
+   app_pkgs2="mate-polkit ffmpeg neovim viewnior pavucontrol thunar ffmpegthumbnailer tumbler thunar-archive-plugin xdg-user-dirs"
+   theme_pkgs="nordic-theme papirus-icon-theme starship"
 
     # Check for yay or paru
     if command -v yay &> /dev/null; then
@@ -64,7 +61,7 @@ if [[ $inst =~ ^[Yy]$ ]]; then
         exit 1
     fi
 
-    if ! $aur_helper -S --noconfirm $git_pkgs $hypr_pkgs $font_pkgs $font_pkgs2 $app_pkgs $app_pkgs2 $theme_pkgs 2>&1 | tee -a $LOG; then
+    if ! $aur_helper -S --noconfirm $git_pkgs $hypr_pkgs $app_pkgs $app_pkgs2 $theme_pkgs 2>&1 | tee -a $LOG; then
         print_error " Failed to install additional packages - please check the install.log \n"
         exit 1
     fi
@@ -77,7 +74,6 @@ else
     print_error " Packages not installed - please check the install.log"
     sleep 1
 fi
-
 
 ### Copy Config Files ###
 read -n1 -rep "${CAT} Would you like to copy config files? (y,n)" CFG
@@ -94,15 +90,42 @@ if [[ $CFG =~ ^[Yy]$ ]]; then
     chmod +x ~/.config/hypr/xdg-portal-hyprland
 fi
 
-### Add Fonts for Waybar ###
-mkdir -p $HOME/Downloads/nerdfonts/
-cd $HOME/Downloads/
-wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.3.1/CascadiaCode.zip
-unzip '*.zip' -d $HOME/Downloads/nerdfonts/
-rm -rf *.zip
-sudo cp -R $HOME/Downloads/nerdfonts/ /usr/share/fonts/
+FONT_DIR="$HOME/.local/share/fonts"
+FONT_ZIP="$FONT_DIR/Meslo.zip"
+FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip"
 
-fc-cache -rv  
+# Check if Meslo Nerd-font is already installed
+if fc-list | grep -qi "Meslo"; then
+    echo "Meslo Nerd-fonts are already installed."
+    exit 0
+fi
+
+echo "Installing Meslo Nerd-fonts..."
+
+# Create the fonts directory if it doesn't exist
+mkdir -p "$FONT_DIR"
+
+# Download the font zip file if it doesn't already exist
+if [ ! -f "$FONT_ZIP" ]; then
+    wget -O "$FONT_ZIP" "$FONT_URL" || {
+        echo "Failed to download Meslo Nerd-fonts from $FONT_URL"
+        exit 1
+    }
+else
+    echo "Meslo.zip already exists in $FONT_DIR, skipping download."
+fi
+
+if [ ! -d "$FONT_DIR/Meslo" ]; then
+    unzip -o "$FONT_ZIP" -d "$FONT_DIR" || {
+        echo "Failed to unzip $FONT_ZIP"
+        exit 1
+    }
+else
+    echo "Meslo font files already unzipped in $FONT_DIR, skipping unzip."
+fi
+rm "$FONT_ZIP"
+fc-cache -fv # Rebuild the font cache
+echo "Meslo Nerd-fonts installed successfully"
 
 ### Enable SDDM Autologin ###
 read -n1 -rep 'Would you like to enable SDDM autologin? (y,n)' SDDM
@@ -130,7 +153,6 @@ if [[ $BLUETOOTH =~ ^[Yy]$ ]]; then
 else
     printf "${YELLOW} No bluetooth packages installed..\n"
 	fi
-
     
 ### Script is done ###
 printf "\n${GREEN} Installation Completed.\n"
