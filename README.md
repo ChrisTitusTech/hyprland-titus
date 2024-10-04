@@ -19,7 +19,7 @@ makepkg -si
 ### Required Packages
 
 ``` bash
-paru -S hyprland mate-polkit ffmpeg neovim viewnior rofi pavucontrol thunar starship wl-clipboard wf-recorder swww grimblast-git ffmpegthumbnailer tumbler playerctl noise-suppression-for-voice thunar-archive-plugin alacritty aylurs-gtk-shell wlogout sddm pamixer nwg-look nordic-theme papirus-icon-theme dunst noto-fonts noto-fonts-emoji brightnessctl hyprpicker-git hyprlock
+paru -S hyprland mate-polkit ffmpeg neovim viewnior rofi pavucontrol thunar starship wl-clipboard wf-recorder swww grimblast-git ffmpegthumbnailer tumbler playerctl noise-suppression-for-voice thunar-archive-plugin alacritty aylurs-gtk-shell wlogout sddm pamixer nwg-look nordic-theme papirus-icon-theme dunst noto-fonts noto-fonts-emoji brightnessctl hyprpicker-git hyprlock xorg-xhost
 ```
 - If you are getting **[error 4 related with payload and client.cpp](https://github.com/Alexays/Waybar/issues/2159)** while building waybar-hyprland-git download PKGBUILD and enter this code in build() section:
 ``` sed -i '10 i #include <stdexcept>\n#include <string>' include/modules/sway/ipc/client.hpp ``` then build (```makepkg -si```)
